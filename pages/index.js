@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 
 import { Box, Button, Text, TextField, Image } from "@skynexui/components";
@@ -24,7 +24,16 @@ function Title(props) {
 
 export default function PaginaInicial() {
   const [username, setUsername] = useState("fvxstx");
+  const [image, setImage] = useState(`https://github.com/${username}.png`);
+  const [infosGit, setInfosGit] = useState([]);
   const router = useRouter();
+
+  useEffect(() => {
+    fetch(`https://api.github.com/users/${username}`).then(async (response) => {
+      const res = await response.json();
+      setInfosGit(res);
+    });
+  }, []);
 
   return (
     <>
@@ -92,6 +101,9 @@ export default function PaginaInicial() {
               onChange={(event) => {
                 const value = event.target.value;
                 setUsername(value);
+                if (value.length > 2) {
+                  setImage(`https://github.com/${value}.png`);
+                }
               }}
               fullWidth
               textFieldColors={{
@@ -138,7 +150,7 @@ export default function PaginaInicial() {
                 borderRadius: "50%",
                 marginBottom: "16px",
               }}
-              src={`https://github.com/${username}.png`}
+              src={image}
             />
             <Text
               variant="body4"
