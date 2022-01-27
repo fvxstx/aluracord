@@ -1,5 +1,3 @@
-import { Box, Button, Text, TextField, Image } from "@skynexui/components";
-
 export default function NotFound() {
   return (
     <>
