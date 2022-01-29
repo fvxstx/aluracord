@@ -3,8 +3,8 @@ import React, { useState } from "react";
 import appConfig from "../config.json";
 
 export default function ChatPage() {
-  const [mensagem, setMensagem] = useState("");
   const [listaMensagens, setListaMensagens] = useState([]);
+  const [mensagem, setMensagem] = useState("");
 
   function handleNewMessage(newMessage) {
     const mensagemInfos = {
@@ -14,6 +14,14 @@ export default function ChatPage() {
     };
     setListaMensagens([mensagemInfos, ...listaMensagens]);
     setMensagem("");
+  }
+
+  function handleRemoveMessage(keyMessage) {
+    const newListMessage = listaMensagens.filter((mensage) => {
+      return mensage.id !== keyMessage;
+    });
+
+    setListaMensagens([...newListMessage]);
   }
 
   return (
@@ -69,7 +77,13 @@ export default function ChatPage() {
             }}
           >
             {listaMensagens.map((mensagem) => {
-              return <MessageList mensagem={mensagem} key={mensagem.id} />;
+              return (
+                <MessageList
+                  mensagem={mensagem}
+                  key={mensagem.id}
+                  press={handleRemoveMessage}
+                />
+              );
             })}
           </Box>
 
@@ -95,6 +109,7 @@ export default function ChatPage() {
               placeholder="Insira sua mensagem aqui..."
               type="textarea"
               styleSheet={{
+                height: "100%",
                 width: "100%",
                 border: "0",
                 resize: "none",
@@ -103,6 +118,14 @@ export default function ChatPage() {
                 backgroundColor: appConfig.theme.colors.neutrals[800],
                 marginRight: "12px",
                 color: appConfig.theme.colors.neutrals[200],
+              }}
+            />
+            <Button
+              label="Enter"
+              variant="primary"
+              colorVariant="positive"
+              onClick={() => {
+                handleNewMessage(mensagem);
               }}
             />
           </Box>
@@ -136,7 +159,7 @@ function Header() {
   );
 }
 
-function MessageList({ mensagem }) {
+function MessageList({ mensagem, press }) {
   return (
     <Text
       key={mensagem.id}
@@ -153,29 +176,48 @@ function MessageList({ mensagem }) {
       <Box
         styleSheet={{
           marginBottom: "8px",
+          display: "flex",
+          justifyContent: "space-between",
         }}
       >
-        <Image
+        <Box
           styleSheet={{
-            width: "20px",
-            height: "20px",
-            borderRadius: "50%",
-            display: "inline-block",
-            marginRight: "8px",
+            display: "flex",
+            alignItems: "center",
+            textAlign: "center",
           }}
-          src={`https://github.com/${mensagem.de}.png`}
-        />
-        <Text tag="strong">{mensagem.de}</Text>
-        <Text
-          styleSheet={{
-            fontSize: "10px",
-            marginLeft: "8px",
-            color: appConfig.theme.colors.neutrals[300],
-          }}
-          tag="span"
         >
-          {new Date().toLocaleDateString()}
-        </Text>
+          <Image
+            styleSheet={{
+              width: "20px",
+              height: "20px",
+              borderRadius: "50%",
+              display: "inline-block",
+              marginRight: "8px",
+            }}
+            src={`https://github.com/${mensagem.de}.png`}
+          />
+          <Text tag="strong">{mensagem.de}</Text>
+          <Text
+            styleSheet={{
+              fontSize: "10px",
+              marginLeft: "8px",
+              color: appConfig.theme.colors.neutrals[300],
+            }}
+            tag="span"
+          >
+            {new Date().toLocaleDateString()}
+          </Text>
+        </Box>
+
+        <Button
+          label="X"
+          variant="tertiary"
+          colorVariant="negative"
+          onClick={() => {
+            press(mensagem.id);
+          }}
+        />
       </Box>
       {mensagem.texto}
     </Text>
