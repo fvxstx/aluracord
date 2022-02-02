@@ -1,18 +1,63 @@
+import React, { useEffect, useState } from "react";
 import { Box, Text, TextField, Image, Button } from "@skynexui/components";
-import React, { useState } from "react";
+import { createClient } from "@supabase/supabase-js";
+import { useRouter } from "next/router";
+
 import appConfig from "../config.json";
 
+import { ButtonSendSticker } from "../src/components/ButtonSendSticker";
+
+const SUPABASE_ANON_KEY =
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYW5vbiIsImlhdCI6MTY0MzQ2NTcxNCwiZXhwIjoxOTU5MDQxNzE0fQ.bHOeZN9V4GZT0Xi23iDo-j_xJjzB4WqOsC0Cn6aY21E";
+const SUPABASE_URL = "https://bmpdirefbotefpsqofrn.supabase.co";
+/* Pegando o db dentro do supabase */
+const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+function realTimeMessage(addMessage) {
+  return supabaseClient
+    .from("mensagens")
+    .on("INSERT", (res) => {
+      addMessage(res.new);
+    })
+    .subscribe();
+}
+
 export default function ChatPage() {
+  const router = useRouter();
+  const userLogado = router.query.username;
+
   const [listaMensagens, setListaMensagens] = useState([]);
   const [mensagem, setMensagem] = useState("");
 
+  useEffect(() => {
+    supabaseClient
+      .from("mensagens")
+      .select("*")
+      .order("id", { ascending: false })
+      .then(({ data }) => {
+        setListaMensagens(data);
+      });
+
+    realTimeMessage((newMessage) => {
+      setListaMensagens((atualLista) => {
+        return [newMessage, ...atualLista];
+      });
+    });
+  }, []);
+
   function handleNewMessage(newMessage) {
     const mensagemInfos = {
-      id: listaMensagens.length + 1,
-      de: "fvxstx",
+      de: userLogado,
       texto: newMessage,
     };
-    setListaMensagens([mensagemInfos, ...listaMensagens]);
+
+    supabaseClient
+      .from("mensagens")
+      .insert([mensagemInfos])
+      .then(({ data }) => {
+        console.log(data);
+      });
+
     setMensagem("");
   }
 
@@ -68,7 +113,7 @@ export default function ChatPage() {
           <Box
             tag="ul"
             styleSheet={{
-              overflow: "hidden",
+              overflow: "auto",
               display: "flex",
               flexDirection: "column-reverse",
               flex: 1,
@@ -118,6 +163,12 @@ export default function ChatPage() {
                 backgroundColor: appConfig.theme.colors.neutrals[800],
                 marginRight: "12px",
                 color: appConfig.theme.colors.neutrals[200],
+              }}
+            />
+            <ButtonSendSticker
+              onStickerClick={(sticker) => {
+                console.log("salvo banco", sticker);
+                handleNewMessage(`:sticker:${sticker}`);
               }}
             />
             <Button
@@ -219,7 +270,11 @@ function MessageList({ mensagem, press }) {
           }}
         />
       </Box>
-      {mensagem.texto}
+      {mensagem.texto.startsWith(":sticker:") ? (
+        <Image src={mensagem.texto.replace(":sticker:", "")} />
+      ) : (
+        mensagem.texto
+      )}
     </Text>
   );
 }
