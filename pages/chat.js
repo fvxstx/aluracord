@@ -54,9 +54,7 @@ export default function ChatPage() {
     supabaseClient
       .from("mensagens")
       .insert([mensagemInfos])
-      .then(({ data }) => {
-        console.log(data);
-      });
+      .then(({ data }) => {});
 
     setMensagem("");
   }
@@ -65,6 +63,12 @@ export default function ChatPage() {
     const newListMessage = listaMensagens.filter((mensage) => {
       return mensage.id !== keyMessage;
     });
+
+    supabaseClient
+      .from("mensagens")
+      .delete()
+      .match({ id: keyMessage })
+      .then(({ data }) => {});
 
     setListaMensagens([...newListMessage]);
   }
@@ -165,20 +169,29 @@ export default function ChatPage() {
                 color: appConfig.theme.colors.neutrals[200],
               }}
             />
-            <ButtonSendSticker
-              onStickerClick={(sticker) => {
-                console.log("salvo banco", sticker);
-                handleNewMessage(`:sticker:${sticker}`);
+            <Box
+              styleSheet={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                textAlign: "center",
+                gap: "5px",
               }}
-            />
-            <Button
-              label="Enter"
-              variant="primary"
-              colorVariant="positive"
-              onClick={() => {
-                handleNewMessage(mensagem);
-              }}
-            />
+            >
+              <ButtonSendSticker
+                onStickerClick={(sticker) => {
+                  handleNewMessage(`:sticker:${sticker}`);
+                }}
+              />
+              <Button
+                label="Enter"
+                variant="primary"
+                colorVariant="positive"
+                onClick={() => {
+                  handleNewMessage(mensagem);
+                }}
+              />
+            </Box>
           </Box>
         </Box>
       </Box>
