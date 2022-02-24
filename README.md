@@ -1,5 +1,5 @@
 <p align="center">
-  <img alt="Alurakut" src=".github/mockup.png" width="100%">
+  <img alt="Alurakut" src=".github/mockup1.png" width="100%">
 </p>
 
 <br>
